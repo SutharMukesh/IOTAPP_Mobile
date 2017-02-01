@@ -1,13 +1,15 @@
 package com.example.mukesh.iotapp;
-
+import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
-import android.widget.Switch;
+import android.widget.Toast;
 import android.widget.ToggleButton;
-
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -16,18 +18,23 @@ import com.google.firebase.database.ValueEventListener;
 
 public class MainActivity extends AppCompatActivity {
 public static String TAG="MAINACT";
+
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference("light");
+    private FirebaseAuth mAuth;
+    private FirebaseAuth.AuthStateListener mAuthListener;
 
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mAuth=FirebaseAuth.getInstance();
+
         // initiate a Switch
-      //  final Switch simpleSwitch = (Switch) findViewById(R.id.switch1);
+        // final Switch simpleSwitch = (Switch) findViewById(R.id.switch1);
         final ToggleButton toggleButton = (ToggleButton) findViewById(R.id.toggleButton);
-// check current state of a Switch (true or false).
-        toggleButton.setText("button");
+
+        // check current state of a Switch (true or false).
+        toggleButton.setText("Connecting...");
         toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -37,6 +44,27 @@ public static String TAG="MAINACT";
             }
         });
 
+        mAuthListener=new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                Log.d(TAG, "inside Authstatechanged");
+
+                if (user != null) {
+                    // User is signed in
+                    Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+
+                } else {
+                    // User is signed out
+                    Log.d(TAG, "onAuthStateChanged:signed_out");
+                    Toast.makeText(MainActivity.this,"u dont exist",Toast.LENGTH_SHORT);
+
+                    startActivity(new Intent(MainActivity.this,Login.class));
+
+
+                }
+            }
+        };
         // Read from the database
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -54,6 +82,24 @@ public static String TAG="MAINACT";
                 Log.w(TAG, "Failed to read value.", error.toException());
             }
         });
+
+
+    }
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mAuth.addAuthStateListener(mAuthListener);
+    }
+
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mAuthListener != null) {
+            mAuth.removeAuthStateListener(mAuthListener);
+        }
     }
 
     public void onn(View v){
@@ -63,6 +109,11 @@ public static String TAG="MAINACT";
 
     public void off(View v){
         myRef.setValue(false);
+
+    }
+    public void signout(View v)
+    {
+        FirebaseAuth.getInstance().signOut();
 
     }
 }
