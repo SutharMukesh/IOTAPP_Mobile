@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 import com.google.firebase.auth.FirebaseAuth;
@@ -17,23 +18,56 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 public class MainActivity extends AppCompatActivity {
-public static String TAG="MAINACT";
-
-    FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference myRef = database.getReference("light");
+    public static String TAG="MAINACT";
+    private String name,email;
+    private TextView txtname;
+//Firebase variables
+    private FirebaseDatabase database;
+    private DatabaseReference myRef;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
+    private FirebaseUser user;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mAuth=FirebaseAuth.getInstance();
-
-        // initiate a Switch
-        // final Switch simpleSwitch = (Switch) findViewById(R.id.switch1);
+//App basic initialisation
+        txtname= (TextView) findViewById(R.id.name);
         final ToggleButton toggleButton = (ToggleButton) findViewById(R.id.toggleButton);
 
-        // check current state of a Switch (true or false).
+//firebase initialisation
+        database = FirebaseDatabase.getInstance();
+        myRef = database.getReference("light");
+        mAuth=FirebaseAuth.getInstance();
+        user=mAuth.getCurrentUser();
+        mAuthListener=new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                Log.d(TAG, "inside Authstatechanged");
+                if (user != null) {
+                    // User is signed in
+                    Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+
+                } else {
+                    // User is signed out
+                    Log.d(TAG, "onAuthStateChanged:signed_out");
+                    Toast.makeText(MainActivity.this,"u dont exist",Toast.LENGTH_SHORT).show();
+
+                    startActivity(new Intent(MainActivity.this,Login.class));
+
+
+                }
+            }
+        };
+//displaying the username on mainActivity
+        name = user.getDisplayName();
+        email = user.getEmail();
+        txtname.setText(name);
+        txtname.setTextSize(20);
+        Log.d(TAG,"name "+name+" Email "+email);
+
+//Togglebutton initialized and set oncheck listener
         toggleButton.setText("Connecting...");
         toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -44,28 +78,7 @@ public static String TAG="MAINACT";
             }
         });
 
-        mAuthListener=new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                Log.d(TAG, "inside Authstatechanged");
-
-                if (user != null) {
-                    // User is signed in
-                    Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-
-                } else {
-                    // User is signed out
-                    Log.d(TAG, "onAuthStateChanged:signed_out");
-                    Toast.makeText(MainActivity.this,"u dont exist",Toast.LENGTH_SHORT);
-
-                    startActivity(new Intent(MainActivity.this,Login.class));
-
-
-                }
-            }
-        };
-        // Read from the database
+// Read from the database
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -82,9 +95,8 @@ public static String TAG="MAINACT";
                 Log.w(TAG, "Failed to read value.", error.toException());
             }
         });
-
-
     }
+
 
 
     @Override

@@ -15,14 +15,6 @@
       },
       "oauth_client": [
         {
-          "client_id": "725313181668-8d6stph50vgjmgv6a3ltg3d113l5461b.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.mukesh.myapplication",
-            "certificate_hash": "66310C857F721B19C513AA9D249C55E5D84DC768"
-          }
-        },
-        {
           "client_id": "725313181668-trunfg1suica4k9gn38qh6omme46o8m7.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -58,30 +50,6 @@
         }
       },
       "oauth_client": [
-        {
-          "client_id": "725313181668-5h805o86j3jh2onvnla0io0n7gdtfscn.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.mukesh.iotapp",
-            "certificate_hash": "D445DC9C6A413C015F1A31C708749AE068FBDE3B"
-          }
-        },
-        {
-          "client_id": "725313181668-kd0ul0hgp1fq62js9hssjv0v03fkiho1.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.mukesh.iotapp",
-            "certificate_hash": "FC57B1411CC3C340F6266DFF26C51B383AFEF843"
-          }
-        },
-        {
-          "client_id": "725313181668-23u9p0tbsd9q5q13ivhqlhv9abmp70er.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.mukesh.iotapp",
-            "certificate_hash": "66310C857F721B19C513AA9D249C55E5D84DC768"
-          }
-        },
         {
           "client_id": "725313181668-trunfg1suica4k9gn38qh6omme46o8m7.apps.googleusercontent.com",
           "client_type": 3

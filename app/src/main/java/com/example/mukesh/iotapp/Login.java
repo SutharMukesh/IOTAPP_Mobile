@@ -180,14 +180,14 @@ public class Login extends AppCompatActivity {
 
     if(TextUtils.isEmpty(email)||TextUtils.isEmpty(password)){
         Toast.makeText(Login.this,"cannot leave email or password blank",Toast.LENGTH_SHORT);
-
     }
+
     else {
         mAuth.signInWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(!task.isComplete()){
-                    Toast.makeText(Login.this,"signing error",Toast.LENGTH_SHORT);
+                    Toast.makeText(Login.this,"signing error",Toast.LENGTH_SHORT).show();
                 }
             }
         });
