@@ -9,6 +9,10 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
+
+import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.auth.IdpResponse;
+import com.firebase.ui.auth.ui.ResultCodes;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -16,6 +20,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.util.Arrays;
+
+import static com.firebase.ui.auth.ui.AcquireEmailHelper.RC_SIGN_IN;
 
 public class MainActivity extends AppCompatActivity {
     public static String TAG="MAINACT";
@@ -26,20 +34,18 @@ public class MainActivity extends AppCompatActivity {
     private DatabaseReference myRef;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
-    private FirebaseUser user;
+    private ToggleButton toggleButton;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 //App basic initialisation
         txtname= (TextView) findViewById(R.id.name);
-        final ToggleButton toggleButton = (ToggleButton) findViewById(R.id.toggleButton);
-
+        toggleButton = (ToggleButton) findViewById(R.id.toggleButton);
 //firebase initialisation
         database = FirebaseDatabase.getInstance();
         myRef = database.getReference("light");
         mAuth=FirebaseAuth.getInstance();
-        user=mAuth.getCurrentUser();
         mAuthListener=new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -48,19 +54,28 @@ public class MainActivity extends AppCompatActivity {
                 if (user != null) {
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-
+                    onSignInInitialize(user);
                 } else {
                     // User is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");
-                    Toast.makeText(MainActivity.this,"u dont exist",Toast.LENGTH_SHORT).show();
-
-                    startActivity(new Intent(MainActivity.this,Login.class));
-
-
+                    startActivityForResult(
+                            AuthUI.getInstance()
+                                    .createSignInIntentBuilder()
+                                    .setIsSmartLockEnabled(false)
+                                    .setProviders(Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
+                                            new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()
+                                            ))
+                                    .build(),
+                            RC_SIGN_IN);
                 }
             }
         };
+
+    }
+
+    private void onSignInInitialize(FirebaseUser user) {
 //displaying the username on mainActivity
+
         name = user.getDisplayName();
         email = user.getEmail();
         txtname.setText(name);
@@ -72,8 +87,7 @@ public class MainActivity extends AppCompatActivity {
         toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-             myRef.setValue(isChecked);
-                toggleButton.setText("hel");
+                myRef.setValue(isChecked);
                 Log.d(TAG," siad");
             }
         });
@@ -86,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
                 // whenever data at this location is updated.
                 Boolean value = dataSnapshot.getValue(Boolean.class);
                 Log.d(TAG, "Value is: " + value);
-                    toggleButton.setChecked(value);
+                toggleButton.setChecked(value);
             }
 
             @Override
@@ -97,35 +111,47 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        // RC_SIGN_IN is the request code you passed into startActivityForResult(...) when starting the sign in flow.
+        if (requestCode == RC_SIGN_IN) {
+            // Successfully signed in
+            if (resultCode == RESULT_OK) {
+                Toast.makeText(this,"signedIn",Toast.LENGTH_LONG).show();
+            } else {
+                // Sign in failed
+                if (resultCode == RESULT_CANCELED) {
+                    // User pressed back button
+                    finish();
+                }
+                if (resultCode==ResultCodes.RESULT_NO_NETWORK) {
+                    Toast.makeText(this,"no Internet",Toast.LENGTH_LONG).show();
+                }
 
+            }
+        }
+    }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onResume() {
+        super.onResume();
         mAuth.addAuthStateListener(mAuthListener);
     }
 
-
     @Override
-    public void onStop() {
-        super.onStop();
+    public void onPause() {
+        super.onPause();
         if (mAuthListener != null) {
             mAuth.removeAuthStateListener(mAuthListener);
         }
     }
 
-    public void onn(View v){
-        myRef.setValue(true);
-
-    }
-
-    public void off(View v){
-        myRef.setValue(false);
-
-    }
     public void signout(View v)
     {
         FirebaseAuth.getInstance().signOut();
+        Log.w(TAG, "signout...");
+
 
     }
 }
