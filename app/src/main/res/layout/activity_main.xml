@@ -24,19 +24,7 @@
         android:text="Toggle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
         android:id="@+id/toggleButton" />
-
-    <Button
-        android:text="Signout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="signout"
-        android:id="@+id/button4"
-        android:layout_below="@+id/toggleButton"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
 </LinearLayout>
 
 </RelativeLayout>

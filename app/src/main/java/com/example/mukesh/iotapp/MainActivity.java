@@ -4,6 +4,8 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.TextView;
@@ -29,12 +31,14 @@ public class MainActivity extends AppCompatActivity {
     public static String TAG="MAINACT";
     private String name,email;
     private TextView txtname;
+    private Intent intent;
+    private ToggleButton toggleButton;
+
 //Firebase variables
     private FirebaseDatabase database;
     private DatabaseReference myRef;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
-    private ToggleButton toggleButton;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,10 +46,15 @@ public class MainActivity extends AppCompatActivity {
 //App basic initialisation
         txtname= (TextView) findViewById(R.id.name);
         toggleButton = (ToggleButton) findViewById(R.id.toggleButton);
+        intent=new Intent(this,Login.class);
 //firebase initialisation
         database = FirebaseDatabase.getInstance();
         myRef = database.getReference("light");
         mAuth=FirebaseAuth.getInstance();
+        Log.d(TAG,"inside main oncreate");
+       final FirebaseUser firebaseUser=FirebaseAuth.getInstance().getCurrentUser();
+        onSignInInitialize(firebaseUser);
+
         mAuthListener=new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -54,28 +63,39 @@ public class MainActivity extends AppCompatActivity {
                 if (user != null) {
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                    onSignInInitialize(user);
                 } else {
                     // User is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");
-                    startActivityForResult(
-                            AuthUI.getInstance()
-                                    .createSignInIntentBuilder()
-                                    .setIsSmartLockEnabled(false)
-                                    .setProviders(Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
-                                            new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()
-                                            ))
-                                    .build(),
-                            RC_SIGN_IN);
                 }
             }
         };
+    }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        // RC_SIGN_IN is the request code you passed into startActivityForResult(...) when starting the sign in flow.
+        if (requestCode == RC_SIGN_IN) {
+            // Successfully signed in
+            if (resultCode == RESULT_OK) {
+                Toast.makeText(this,"signedIn",Toast.LENGTH_LONG).show();
+            } else {
+                // Sign in failed
+                if (resultCode == RESULT_CANCELED) {
+                    // User pressed back button
+                    finish();
+                }
+                if (resultCode==ResultCodes.RESULT_NO_NETWORK) {
+                    Toast.makeText(this,"no Internet",Toast.LENGTH_LONG).show();
+                }
+
+            }
+        }
     }
 
     private void onSignInInitialize(FirebaseUser user) {
-//displaying the username on mainActivity
 
+//displaying the username on mainActivity
         name = user.getDisplayName();
         email = user.getEmail();
         txtname.setText(name);
@@ -102,7 +122,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "Value is: " + value);
                 toggleButton.setChecked(value);
             }
-
             @Override
             public void onCancelled(DatabaseError error) {
                 // Failed to read value
@@ -112,46 +131,38 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        // RC_SIGN_IN is the request code you passed into startActivityForResult(...) when starting the sign in flow.
-        if (requestCode == RC_SIGN_IN) {
-            // Successfully signed in
-            if (resultCode == RESULT_OK) {
-                Toast.makeText(this,"signedIn",Toast.LENGTH_LONG).show();
-            } else {
-                // Sign in failed
-                if (resultCode == RESULT_CANCELED) {
-                    // User pressed back button
-                    finish();
-                }
-                if (resultCode==ResultCodes.RESULT_NO_NETWORK) {
-                    Toast.makeText(this,"no Internet",Toast.LENGTH_LONG).show();
-                }
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main,menu);
+        return true;
+    }
 
-            }
-        }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId()==R.id.action_search)
+            FirebaseAuth.getInstance().signOut();
+            startActivityForResult(intent,RC_SIGN_IN);
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        if(mAuthListener == null)
         mAuth.addAuthStateListener(mAuthListener);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        if (mAuthListener != null) {
+        if (mAuthListener != null)
             mAuth.removeAuthStateListener(mAuthListener);
-        }
     }
 
     public void signout(View v)
     {
         FirebaseAuth.getInstance().signOut();
         Log.w(TAG, "signout...");
-
 
     }
 }
