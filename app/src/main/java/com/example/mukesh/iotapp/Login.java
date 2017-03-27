@@ -28,12 +28,12 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class Login extends AppCompatActivity {
 
-    private String TAG="EmailLogin";
+    private String TAG = "EmailLogin";
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
-    private EditText passworded,emailed;
+    private EditText passworded, emailed;
     private ProgressDialog progressDialog;
-    private String email,password;
+    private String email, password;
     FirebaseUser user;
     private static final int RC_SIGN_IN = 9001;
 
@@ -42,13 +42,13 @@ public class Login extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        emailed= (EditText) findViewById(R.id.editText);
-        passworded= (EditText) findViewById(R.id.editText2);
-        mAuth=FirebaseAuth.getInstance();
-        progressDialog=new ProgressDialog(this);
+        emailed = (EditText) findViewById(R.id.editText);
+        passworded = (EditText) findViewById(R.id.editText2);
+        mAuth = FirebaseAuth.getInstance();
+        progressDialog = new ProgressDialog(this);
 
 //Listener for authentication
-        mAuthListener=new FirebaseAuth.AuthStateListener() {
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 user = firebaseAuth.getCurrentUser();
@@ -56,7 +56,11 @@ public class Login extends AppCompatActivity {
                 if (user != null) {
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in-login:" + user.getUid());
-                    startActivityForResult(new Intent(Login.this,MainActivity.class),RC_SIGN_IN);
+//                    if(user.getDisplayName()==null)
+//                    {
+//                        startActivityForResult(new Intent(Login.this,Username.class),RC_SIGN_IN);
+//                    }else
+                    startActivityForResult(new Intent(Login.this, MainActivity.class), RC_SIGN_IN);
                 } else {
                     // User is signed outa
                     Log.d(TAG, "onAuthStateChanged:signed_out-login");
@@ -64,12 +68,12 @@ public class Login extends AppCompatActivity {
             }
         };
 
-        ConnectivityManager connectivityManager= (ConnectivityManager) getSystemService(this.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo=connectivityManager.getActiveNetworkInfo();
-        if(networkInfo!=null && networkInfo.isConnected()){
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(this.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
 
-        }else{
-            Toast.makeText(Login.this,"Please connect to Internet",Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(Login.this, "Please connect to Internet", Toast.LENGTH_SHORT).show();
         }
     }//oncreate ends
 
@@ -80,16 +84,16 @@ public class Login extends AppCompatActivity {
         if (requestCode == RC_SIGN_IN) {
             // Successfully signed in
             if (resultCode == RESULT_OK) {
-                Toast.makeText(this,"signedIn",Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "signedIn", Toast.LENGTH_LONG).show();
             } else {
                 // Sign in failed
                 if (resultCode == RESULT_CANCELED) {
                     // User pressed back button
-                    Log.d(TAG,"activityresult");
+                    Log.d(TAG, "activityresult");
                     finish();
                 }
-                if (resultCode== ResultCodes.RESULT_NO_NETWORK) {
-                    Toast.makeText(this,"no Internet",Toast.LENGTH_LONG).show();
+                if (resultCode == ResultCodes.RESULT_NO_NETWORK) {
+                    Toast.makeText(this, "no Internet", Toast.LENGTH_LONG).show();
                 }
             }
         }
@@ -108,41 +112,41 @@ public class Login extends AppCompatActivity {
             mAuth.removeAuthStateListener(mAuthListener);
     }
 
-   public void signin(final View v){
+    public void signin(final View v) {
 
-       Log.d(TAG,"Signing in");
-       email = emailed.getText().toString();
-       password = passworded.getText().toString();
+        Log.d(TAG, "Signing in");
+        email = emailed.getText().toString();
+        password = passworded.getText().toString();
        /*if(TextUtils.isEmpty(email)||TextUtils.isEmpty(password)){
             Toast.makeText(Login.this,"cannot leave email or password blank",Toast.LENGTH_SHORT).show();
        }
        */
-       if (!validateForm()) {
-           return;
-       }
+        if (!validateForm()) {
+            return;
+        }
 
 
         progressDialog.setMessage("signing in");
         progressDialog.show();
 
-        mAuth.signInWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+        mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
-                Log.d(TAG,"inside signinWithEmailadnPasswd");
+                Log.d(TAG, "inside signinWithEmailadnPasswd");
                 progressDialog.dismiss();
-                if(!task.isComplete()){
-                    Toast.makeText(Login.this,task.getException().getMessage(),Toast.LENGTH_SHORT).show();
+                if (!task.isComplete()) {
+                    Toast.makeText(Login.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(Login.this,e.getMessage(),Toast.LENGTH_SHORT).show();
+                Toast.makeText(Login.this, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
 
 
-}
+    }
 
     private boolean validateForm() {
         boolean valid = true;
