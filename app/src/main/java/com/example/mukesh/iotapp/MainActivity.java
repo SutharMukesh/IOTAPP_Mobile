@@ -1,6 +1,8 @@
 package com.example.mukesh.iotapp;
 
+import android.app.Dialog;
 import android.content.Intent;
+import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -9,11 +11,19 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.NumberPicker;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -21,6 +31,7 @@ import android.widget.ToggleButton;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.ui.ResultCodes;
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -29,6 +40,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,18 +50,29 @@ import org.json.JSONObject;
 import java.sql.Timestamp;
 import java.util.Arrays;
 
+import ibt.ortc.api.Ortc;
+import ibt.ortc.extensibility.OnConnected;
+import ibt.ortc.extensibility.OnMessage;
+import ibt.ortc.extensibility.OnSubscribed;
+import ibt.ortc.extensibility.OrtcClient;
+import ibt.ortc.extensibility.OrtcFactory;
+
 import static com.firebase.ui.auth.ui.AcquireEmailHelper.RC_SIGN_IN;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     public static String TAG = "MAINACT";
     private String name, email,L1="Light",log="log";
-    private TextView txtname,nav_name_tv,nav_email_tv;
+    private TextView txtname,nav_name_tv,nav_email_tv,mtimer;
     private Intent intent;
     private ToggleButton toggleButton;
-    private int startTime,endTime,usageTime;
+    private int startTime,endTime,usageTime,hours,mins,secs,millisecs;
     private DrawerLayout mdrawer;
     private ActionBarDrawerToggle mToggle;
-//Firebase variables
+    private Button mtimerButton1,mtimerButton2;
+    private PopupWindow mpopupWindow;
+    private LayoutInflater layoutInflater;
+
+    //Firebase variables
     private FirebaseDatabase database;
     private DatabaseReference myRef,mlog,mUsage;
     private FirebaseAuth mAuth;
@@ -57,7 +81,120 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 //App basic initialisation
+        //popup window (Related to Timer)
+        mtimerButton1= (Button) findViewById(R.id.timer_button);
+        mtimerButton2= (Button) findViewById(R.id.timer_button2);
+        DisplayMetrics displayMetrics=new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        final int width=displayMetrics.widthPixels;
+        final int height=displayMetrics.heightPixels;
+        mtimerButton1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                final Dialog dialog=new Dialog(MainActivity.this);
+                dialog.setTitle("set Timer for light1");
+                dialog.setContentView(R.layout.popup1);
+
+                final NumberPicker np1= (NumberPicker) dialog.findViewById(R.id.np_hours);
+                final NumberPicker np2= (NumberPicker) dialog.findViewById(R.id.np_mins);
+                final NumberPicker np3= (NumberPicker) dialog.findViewById(R.id.np_secs);
+                Button on= (Button) dialog.findViewById(R.id.timer_ON);
+                Button off= (Button) dialog.findViewById(R.id.timer_OFF);
+                Button cancel= (Button) dialog.findViewById(R.id.timer_cancel);
+
+               np1.setMaxValue(24);
+                np1.setMinValue(0);
+                np2.setMaxValue(60);
+                np2.setMinValue(0);
+                np3.setMaxValue(60);
+                np3.setMinValue(0);
+                np1.setWrapSelectorWheel(false);
+
+                np1.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+                    @Override
+                    public void onValueChange(NumberPicker picker, int oldVal, int newVal){
+                        //Display the newly selected number from picker
+                        hours=newVal;
+                        millisecs=(hours*3600+mins*60+secs)*1000;
+                        Log.d(TAG,"inside hrs "+millisecs);
+
+                        Toast.makeText(MainActivity.this, "hrs "+hours, Toast.LENGTH_LONG).show();
+                    }
+                });
+                np2.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+                    @Override
+                    public void onValueChange(NumberPicker picker, int oldVal, int newVal){
+                        //Display the newly selected number from picker
+                        mins=newVal;
+                        millisecs=(hours*3600+mins*60+secs)*1000;
+                        Log.d(TAG,"inside mins "+millisecs);
+
+                        Toast.makeText(MainActivity.this, "hrs "+mins, Toast.LENGTH_LONG).show();
+                    }
+                });
+                np3.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+                    @Override
+                    public void onValueChange(NumberPicker picker, int oldVal, int newVal){
+                        //Display the newly selected number from picker
+                        secs=newVal;
+                        millisecs=(hours*3600+mins*60+secs)*1000;
+                        Log.d(TAG,"inside sec "+millisecs);
+                        Toast.makeText(MainActivity.this, "hrs "+secs, Toast.LENGTH_LONG).show();
+                    }
+                });
+
+                on.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v) {
+
+                        CountDownTimer countDownTimer = new CountDownTimer(millisecs, 1000) {
+
+                            public void onTick(long millisUntilFinished) {
+                                mtimer.setText("seconds remaining: " + millisUntilFinished / 1000);
+                            }
+                            public void onFinish() {
+                                mtimer.setText("done!");
+                                myRef.setValue(true);
+                            }
+                        }.start();
+                        dialog.dismiss();
+
+                    }
+                });
+
+                off.setOnClickListener(new View.OnClickListener()
+                {
+                    @Override
+                    public void onClick(View v) {
+
+                        CountDownTimer countDownTimer = new CountDownTimer(millisecs, 1000) {
+
+                            public void onTick(long millisUntilFinished) {
+                                mtimer.setText("seconds remaining: " + millisUntilFinished / 1000);
+                            }
+                            public void onFinish() {
+                                mtimer.setText("done!");
+                                myRef.setValue(false);
+                            }
+                        }.start();
+                        dialog.dismiss();
+                    }
+                });
+
+                cancel.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                });
+                dialog.show();
+            }
+        });
+
         //below all related to navigation bar.
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -71,17 +208,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mdrawer.setDrawerListener(mToggle);
         mToggle.syncState();
 
-
+        mtimer= (TextView) findViewById(R.id.time_tv);
         txtname = (TextView) findViewById(R.id.name);
         toggleButton = (ToggleButton) findViewById(R.id.toggleButton);
         intent = new Intent(this, Login.class);
 //firebase initialisation
         database = FirebaseDatabase.getInstance();
-        myRef = database.getReference("light");
+        myRef = database.getReference("light/status/");
         mlog=database.getReference("log");
         mUsage=database.getReference("usage");
         mAuth = FirebaseAuth.getInstance();
-
+        FirebaseApp.initializeApp(this);
+        FirebaseMessaging.getInstance().subscribeToTopic("Power_Notifications");
         Log.d(TAG, "inside main oncreate");
         final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         onSignInInitialize(firebaseUser);
@@ -93,6 +231,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Log.d(TAG, "inside Authstatechanged");
                 if (user != null) {
                     // User is signed in
+
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
                 } else {
                     // User is signed out
@@ -100,6 +239,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
             }
         };
+
+
+
     }
 //again navigation bar related onBackPressed() go to mainActivity(i.e. drawerlayout)
     @Override
@@ -152,10 +294,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    private void onSignInInitialize(FirebaseUser user) {
+    private void onSignInInitialize(final FirebaseUser user) {
 
 //displaying the username on mainActivity
-        name = user.getDisplayName();
+        name = user.getDisplayName().toString();
         email = user.getEmail();
         txtname.setText(name);
         txtname.setTextSize(20);
@@ -169,12 +311,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-              //  Bundle bundle=new Bundle();
-               // bundle.putString("username",name);
-               // bundle.putString("email",email);
-             //   bundle.putString("device",myRef.toString());
-               // mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
-                myRef.setValue(isChecked);
+
+                myRef.setValue(isChecked+":"+name);
+
                 mlog.child(name).child("light1").push().setValue(timestamp.toString().concat(" "+isChecked));
                 String TS[]=timestamp.toString().split(" ");
                 if(isChecked)
@@ -187,7 +326,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 if(!isChecked) {
                     Toast.makeText(MainActivity.this, " it is used for " + usageTime + "sec", Toast.LENGTH_LONG).show();
                     mUsage.child(L1).push().setValue(usageTime+" "+TS[0]);
-                }Log.d(TAG, " siad");
+                }
+                Log.d(TAG, " siad");
             }
         });
 
@@ -198,9 +338,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
-                Boolean value = dataSnapshot.getValue(Boolean.class);
-                Log.d(TAG, "Value is: " + value);
-                toggleButton.setChecked(value);
+                //Boolean value = dataSnapshot.getValue(Boolean.class);
+                String value = dataSnapshot.getValue(String.class);
+                Log.d(TAG, "Value is from datasnapshot: " + value);
+                value = value.split(":")[0];
+                toggleButton.setChecked(Boolean.parseBoolean(value));
             }
 
             @Override

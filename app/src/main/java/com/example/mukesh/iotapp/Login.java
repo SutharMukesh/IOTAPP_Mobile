@@ -25,6 +25,13 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Login extends AppCompatActivity {
 
@@ -56,6 +63,26 @@ public class Login extends AppCompatActivity {
                 if (user != null) {
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in-login:" + user.getUid());
+
+                    // User is signed in
+                    String name = user.getDisplayName();
+                    String email = user.getEmail();
+                    String uid = user.getUid();
+                    FirebaseDatabase database = FirebaseDatabase.getInstance();
+                    String key = database.getReference("users").push().getKey();
+
+                    Map<String, Object> childUpdates = new HashMap<>();
+                    childUpdates.put( "name", name);
+                    childUpdates.put( "email", email);
+                    // other properties here
+
+                    database.getReference("users/"+uid).updateChildren(childUpdates, new DatabaseReference.CompletionListener() {
+                        @Override
+                        public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                            if (databaseError == null) {
+                            }
+                        }
+                    });
 //                    if(user.getDisplayName()==null)
 //                    {
 //                        startActivityForResult(new Intent(Login.this,Username.class),RC_SIGN_IN);
@@ -133,6 +160,8 @@ public class Login extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 Log.d(TAG, "inside signinWithEmailadnPasswd");
+                DatabaseReference databaseReference= FirebaseDatabase.getInstance().getReference("light");
+                databaseReference.child("token").setValue(FirebaseInstanceId.getInstance().getToken());
                 progressDialog.dismiss();
                 if (!task.isComplete()) {
                     Toast.makeText(Login.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
