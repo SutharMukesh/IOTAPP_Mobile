@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-  >
+    android:id="@+id/nav_menu"
+
+    >
     <item
         android:id="@+id/control_appliance"
         android:title="Control Appliance"
@@ -14,7 +16,9 @@
     </item>
     <item
         android:id="@+id/addremoveUsers"
-        android:title="add/remove Users">
+        android:title="add/remove Users"
+        android:visible="true"
+        >
 
     </item>
 

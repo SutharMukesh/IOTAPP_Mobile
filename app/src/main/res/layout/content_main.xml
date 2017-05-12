@@ -6,109 +6,155 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="10dp" />
-
     <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardElevation="0dp">
+        android:layout_margin="10dp"
+        app:cardElevation="4dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:elevation="4dp"
-            android:orientation="horizontal">
+            android:layout_height="match_parent"
+            >
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentTop="true"
                 android:fontFamily="sans-serif-condensed"
-                android:paddingLeft="10sp"
+                android:padding="10sp"
                 android:text="Light1"
                 android:textAllCaps="false"
-                android:textAppearance="@style/TextAppearance.AppCompat.Display2"
-                android:textSize="40sp" />
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="setTimer"
-                android:id="@+id/timer_button"
-                android:layout_alignParentTop="true"
-                android:layout_toLeftOf="@+id/toggleButton"
-                android:layout_toStartOf="@+id/toggleButton" />
-            <ToggleButton
-                android:id="@+id/toggleButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentTop="true"
-                android:text="Toggle" />
-
-
-        </RelativeLayout>
-    </android.support.v7.widget.CardView>
-
-    <android.support.v7.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        app:cardElevation="0dp">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:elevation="4dp"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:textSize="35sp"
+                android:layout_centerVertical="true"
                 android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentTop="true"
-                android:fontFamily="sans-serif-condensed"
-                android:paddingLeft="10sp"
-                android:text="Light1"
-                android:textAllCaps="false"
-                android:textAppearance="@style/TextAppearance.AppCompat.Display2"
-                android:textSize="40sp" />
-
-            <Button
-                android:id="@+id/timer_button2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="setTimer"
-                android:layout_alignParentTop="true"
-                android:layout_toLeftOf="@+id/toggleButton2"
-                android:layout_toStartOf="@+id/toggleButton2" />
-
-            <ToggleButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentTop="true"
-                android:text="Toggle"
-                android:id="@+id/toggleButton2" />
-
-
-        </RelativeLayout>
-    </android.support.v7.widget.CardView>
-
-
-    <TextView
-        android:id="@+id/time_tv"
+                android:layout_alignParentStart="true" />
+<LinearLayout
+    android:layout_width="wrap_content"
+    android:orientation="horizontal"
+    android:layout_height="wrap_content"
+    android:layout_centerVertical="true"
+    android:layout_alignParentRight="true"
+    android:layout_alignParentEnd="true">
+    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="20dp"
-        android:textSize="20sp" />
+        android:text="setTimer"
+        android:id="@+id/timer_button"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@+id/toggleButton"
+        android:layout_toStartOf="@+id/toggleButton" />
+
+
+    <Button
+        android:id="@+id/controlButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Connecting..." />
+</LinearLayout>
+
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp"
+        app:cardElevation="4dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:padding="10sp"
+                android:text="Light2"
+                android:textAllCaps="false"
+                android:textSize="35sp"
+                android:layout_centerVertical="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:id="@+id/textView2" />
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true">
+        <Button
+            android:id="@+id/timer_button2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="setTimer"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/toggleButton2"
+            android:layout_toStartOf="@+id/toggleButton2" />
+
+        <Button
+            android:id="@+id/controlButton2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Button" />
+    </LinearLayout>
+
+
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/timer_cardView"
+        android:layout_margin="10dp"
+        app:cardElevation="4dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginStart="15dp"
+                android:layout_centerVertical="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true" />
+
+            <TextView
+                android:id="@+id/time_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="5"
+                android:paddingLeft="10dp"
+                android:layout_marginRight="5dp"
+                android:textSize="45sp"
+                android:layout_centerVertical="true"
+                android:layout_centerHorizontal="true" />
+
+            <Button
+                android:id="@+id/abort"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="11dp"
+                android:layout_marginRight="11dp"
+                android:text="Abort" />
+        </RelativeLayout>
+
+    </android.support.v7.widget.CardView>
+
+
+
+
 </LinearLayout>

@@ -9,29 +9,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-
 import android.view.View;
 import android.widget.EditText;
-
 import android.widget.Toast;
-
 import com.firebase.ui.auth.ui.ResultCodes;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.iid.FirebaseInstanceId;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class Login extends AppCompatActivity {
 
@@ -41,8 +29,9 @@ public class Login extends AppCompatActivity {
     private EditText passworded, emailed;
     private ProgressDialog progressDialog;
     private String email, password;
-    FirebaseUser user;
+    private FirebaseUser user;
     private static final int RC_SIGN_IN = 9001;
+    private FirebaseDatabase database ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,45 +49,20 @@ public class Login extends AppCompatActivity {
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 user = firebaseAuth.getCurrentUser();
                 Log.d(TAG, "inside Authstatechanged-login");
+                database = FirebaseDatabase.getInstance();
                 if (user != null) {
-                    // User is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in-login:" + user.getUid());
-
                     // User is signed in
-                    String name = user.getDisplayName();
-                    String email = user.getEmail();
-                    String uid = user.getUid();
-                    FirebaseDatabase database = FirebaseDatabase.getInstance();
-                    String key = database.getReference("users").push().getKey();
-
-                    Map<String, Object> childUpdates = new HashMap<>();
-                    childUpdates.put( "name", name);
-                    childUpdates.put( "email", email);
-                    // other properties here
-
-                    database.getReference("users/"+uid).updateChildren(childUpdates, new DatabaseReference.CompletionListener() {
-                        @Override
-                        public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                            if (databaseError == null) {
-                            }
-                        }
-                    });
-//                    if(user.getDisplayName()==null)
-//                    {
-//                        startActivityForResult(new Intent(Login.this,Username.class),RC_SIGN_IN);
-//                    }else
-                    startActivityForResult(new Intent(Login.this, MainActivity.class), RC_SIGN_IN);
+                                startActivityForResult(new Intent(Login.this, MainActivity.class), RC_SIGN_IN);
                 } else {
-                    // User is signed outa
+                    // User is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out-login");
                 }
             }
         };
-
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(this.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
-
         } else {
             Toast.makeText(Login.this, "Please connect to Internet", Toast.LENGTH_SHORT).show();
         }
@@ -140,28 +104,20 @@ public class Login extends AppCompatActivity {
     }
 
     public void signin(final View v) {
-
         Log.d(TAG, "Signing in");
         email = emailed.getText().toString();
         password = passworded.getText().toString();
-       /*if(TextUtils.isEmpty(email)||TextUtils.isEmpty(password)){
-            Toast.makeText(Login.this,"cannot leave email or password blank",Toast.LENGTH_SHORT).show();
-       }
-       */
+
         if (!validateForm()) {
             return;
         }
-
-
         progressDialog.setMessage("signing in");
         progressDialog.show();
 
         mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
-                Log.d(TAG, "inside signinWithEmailadnPasswd");
-                DatabaseReference databaseReference= FirebaseDatabase.getInstance().getReference("light");
-                databaseReference.child("token").setValue(FirebaseInstanceId.getInstance().getToken());
+                Log.d(TAG, "inside signinWithEmailadnPasswd");;
                 progressDialog.dismiss();
                 if (!task.isComplete()) {
                     Toast.makeText(Login.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
@@ -195,7 +151,6 @@ public class Login extends AppCompatActivity {
         } else {
             passworded.setError(null);
         }
-
         return valid;
     }
 }
